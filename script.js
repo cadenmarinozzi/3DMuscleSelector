@@ -1,6 +1,6 @@
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 const white = new THREE.Color(0xffffff);
 const baseColor = new THREE.Color(0x768fac);
@@ -11,10 +11,10 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
 
 const camera = new THREE.PerspectiveCamera(
-	75,
-	window.innerWidth / window.innerHeight,
-	0.1,
-	1000
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
 );
 
 camera.position.z = -1;
@@ -23,7 +23,7 @@ const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 
 const renderer = new THREE.WebGLRenderer({
-	antialias: true,
+  antialias: true,
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -34,35 +34,33 @@ controls.enableDamping = true;
 
 const loader = new GLTFLoader();
 
-const modelPath = './bodyMuscles.glb';
+const modelPath = "./bodyMuscles.glb";
 
 // Load the model
 loader.load(modelPath, (gltf) => {
-	const modelScene = gltf.scene;
+  const modelScene = gltf.scene;
 
-	// Set the model's material
-	modelScene.traverse((node) => {
-		if (!node.material) return;
+  // Set the model's material
+  modelScene.traverse((node) => {
+    if (!node.material) return;
 
-		node.material = new THREE.MeshPhysicalMaterial({
-			color: baseColor,
-			emissive: baseColor,
-			emissiveIntensity: 0.5,
-			metalness: 0,
-			roughness: 1,
-			clearcoat: 1,
-			clearcoatRoughness: 1,
-		});
+    node.material = new THREE.MeshPhysicalMaterial({
+      color: baseColor,
+      emissive: baseColor,
+      emissiveIntensity: 0.5,
+      metalness: 0,
+      roughness: 1,
+      clearcoat: 1,
+      clearcoatRoughness: 1,
+    });
 
-		node.castShadow = true;
-	});
+    node.castShadow = true;
+  });
 
-	console.log(modelScene);
+  // Rotate the model 180 degrees
+  modelScene.rotation.y = Math.PI;
 
-	// Rotate the model 180 degrees
-	modelScene.rotation.y = Math.PI;
-
-	scene.add(modelScene);
+  scene.add(modelScene);
 });
 
 // Add lighting
@@ -100,84 +98,80 @@ scene.add(shadowLight);
 // Mouse events
 let mouseDown = false;
 
-window.addEventListener('mousemove', (event) => {
-	pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-	pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+window.addEventListener("mousemove", (event) => {
+  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 });
 
-window.addEventListener('mouseup', () => {
-	mouseDown = false;
+window.addEventListener("mouseup", () => {
+  mouseDown = false;
 });
 
-window.addEventListener('mousedown', () => {
-	mouseDown = true;
+window.addEventListener("mousedown", () => {
+  mouseDown = true;
 });
 
 // Touch events
 
-window.addEventListener('touchmove', (event) => {
-	pointer.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
-	pointer.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+let touched = false;
+
+window.addEventListener("touchend", (event) => {
+  touched = true;
 });
 
-window.addEventListener('touchend', () => {
-	mouseDown = false;
-});
-
-window.addEventListener('touchstart', () => {
-	mouseDown = true;
+window.addEventListener("touchstart", (event) => {
+  pointer.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
 });
 
 function animate() {
-	requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 
-	if (mouseDown) {
-		raycaster.setFromCamera(pointer, camera);
+  raycaster.setFromCamera(pointer, camera);
 
-		const children = scene.children;
-		const intersects = raycaster.intersectObjects(children);
+  if (mouseDown || touched) {
+    const children = scene.children;
+    const intersects = raycaster.intersectObjects(children);
 
-		if (intersects.length > 0) {
-			let intersectsNames = [];
+    if (intersects.length > 0) {
+      let intersectsNames = [];
 
-			for (let i = 0; i < intersects.length; i++) {
-				const intersection = intersects[i].object;
-				const name = intersection.name;
+      for (let i = 0; i < intersects.length; i++) {
+        const intersection = intersects[i].object;
+        const name = intersection.name;
 
-				if (!name.includes('MUSCLE_')) continue;
+        if (!name.includes("MUSCLE_")) continue;
 
-				intersectsNames.push(name);
+        intersectsNames.push(name);
 
-				intersection.material.emissive.set(selectedColor);
-			}
+        intersection.material.emissive.set(selectedColor);
+      }
 
-			for (let i = 0; i < children.length; i++) {
-				children[i].traverse((child) => {
-					const name = child.name;
+      for (let i = 0; i < children.length; i++) {
+        children[i].traverse((child) => {
+          const name = child.name;
 
-					if (!child.name.includes('MUSCLE_')) return;
-					if (!child.material) return;
+          if (!child.name.includes("MUSCLE_")) return;
+          if (!child.material) return;
 
-					for (let i = 0; i < intersectsNames.length; i++) {
-						if (
-							intersectsNames[i].includes(
-								name.slice(0, name.length - 1)
-							)
-						) {
-							child.material.emissive.set(selectedColor);
+          for (let i = 0; i < intersectsNames.length; i++) {
+            if (intersectsNames[i].includes(name.slice(0, name.length - 1))) {
+              child.material.emissive.set(selectedColor);
 
-							return;
-						}
-					}
+              return;
+            }
+          }
 
-					child.material.emissive.set(baseColor);
-				});
-			}
-		}
-	}
+          child.material.emissive.set(baseColor);
+        });
+      }
+    }
 
-	controls.update();
-	renderer.render(scene, camera);
+    touched = false;
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
 }
 
 animate();
