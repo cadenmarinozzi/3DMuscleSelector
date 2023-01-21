@@ -113,6 +113,21 @@ window.addEventListener('mousedown', () => {
 	mouseDown = true;
 });
 
+// Touch events
+
+window.addEventListener('touchmove', (event) => {
+	pointer.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+	pointer.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+});
+
+window.addEventListener('touchend', () => {
+	mouseDown = false;
+});
+
+window.addEventListener('touchstart', () => {
+	mouseDown = true;
+});
+
 function animate() {
 	requestAnimationFrame(animate);
 
