@@ -57,8 +57,6 @@ loader.load(modelPath, (gltf) => {
 		node.castShadow = true;
 	});
 
-	console.log(modelScene);
-
 	// Rotate the model 180 degrees
 	modelScene.rotation.y = Math.PI;
 
@@ -115,25 +113,23 @@ window.addEventListener('mousedown', () => {
 
 // Touch events
 
-window.addEventListener('touchmove', (event) => {
+let touched = false;
+
+window.addEventListener('touchend', (event) => {
+	touched = true;
+});
+
+window.addEventListener('touchstart', (event) => {
 	pointer.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
 	pointer.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
-});
-
-window.addEventListener('touchend', () => {
-	mouseDown = false;
-});
-
-window.addEventListener('touchstart', () => {
-	mouseDown = true;
 });
 
 function animate() {
 	requestAnimationFrame(animate);
 
-	if (mouseDown) {
-		raycaster.setFromCamera(pointer, camera);
+	raycaster.setFromCamera(pointer, camera);
 
+	if (mouseDown || touched) {
 		const children = scene.children;
 		const intersects = raycaster.intersectObjects(children);
 
@@ -174,6 +170,8 @@ function animate() {
 				});
 			}
 		}
+
+		touched = false;
 	}
 
 	controls.update();
